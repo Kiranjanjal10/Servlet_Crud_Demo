@@ -69,15 +69,64 @@ public class UserServlet extends HttpServlet {
 
     }
     @Override
-    public void doPut(HttpServletRequest request, HttpServletResponse response)
-    {
+    public void doPut(HttpServletRequest request,
+                      HttpServletResponse response) throws IOException {
 
+        Integer id = Integer.parseInt(request.getParameter("id"));
+        String name = request.getParameter("name");
+        String email = request.getParameter("email");
+        String mobile = request.getParameter("mobile");
+
+        if (name == null || email == null || mobile == null) {
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            response.setContentType("application/json");
+            response.getWriter().write("{\"message\":\"Some fields are missing\"}");
+            return;
+        }
+
+        User user = new User(id, name, email, mobile);
+
+        User updatedUser = userService.updateUser(id, user);
+
+        if (updatedUser == null) {
+            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+            response.setContentType("application/json");
+            response.getWriter().write("{\"message\":\"User not found\"}");
+            return;
+        }
+
+        response.setStatus(HttpServletResponse.SC_OK);
+        response.setContentType("application/json");
+        response.getWriter().write("{\"message\":\"User updated successfully\"}");
     }
 
     @Override
-    public void doDelete(HttpServletRequest request, HttpServletResponse response)
-    {
+    public void doDelete(HttpServletRequest request,
+                         HttpServletResponse response) throws IOException {
 
+        String idParam = request.getParameter("id");
+
+        if (idParam == null) {
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            response.setContentType("application/json");
+            response.getWriter().write("{\"message\":\"Id is required\"}");
+            return;
+        }
+
+        Integer id = Integer.parseInt(idParam);
+
+        boolean deleted = userService.deleteUser(id);
+
+        if (!deleted) {
+            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+            response.setContentType("application/json");
+            response.getWriter().write("{\"message\":\"User not found\"}");
+            return;
+        }
+
+        response.setStatus(HttpServletResponse.SC_OK);
+        response.setContentType("application/json");
+        response.getWriter().write("{\"message\":\"User deleted successfully\"}");
     }
 
     private String userToJson(User userRes)
